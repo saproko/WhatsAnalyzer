@@ -88,8 +88,6 @@ class Reporter:
         con.print(
             f"[bold magenta]Ergebnisse des Chats \"{self._chatname}\" mit den Nutzern {', '.join(self._analyzer.manager.usernames)}[bold magenta]")
 
-        con.print("Es wird empfohlen, dieses Fenster möglichst groß zu ziehen bzw. Vollbild zu verwenden, damit die Tabellen richtig geladen werden.")
-
         con.print("[green]Fakten zum Chat[/green]")
         chat_stats = Table(show_header=False)
 

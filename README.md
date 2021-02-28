@@ -25,6 +25,8 @@ With this program you can get insight into all your WhatsApp chats, including gr
 
 ## Limitations
 
-I have written the program for my personal use. Therefore, most comments are in german at the moment. Furthermore, I suppose the date format at the beginning of each line (which is necessery for message detection) will vary from region to region. If you have problems, please contact me as I intend to improve compatibility in the future.
+I have written the program for my personal use. Therefore, most text is in german at the moment. Furthermore, I suppose the date format at the beginning of each line (which is necessery for message detection) will vary from region to region. If you have problems, please contact me as I intend to improve compatibility in the future.
 
 Since this is my first repository on GitHub, please excuse if not anything is perfect. If you have feedback, please contact me.
+
+E-Mail: saproko17@gmail.com
