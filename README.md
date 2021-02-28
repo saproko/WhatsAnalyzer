@@ -18,8 +18,8 @@ With this program you can get insight into all your WhatsApp chats, including gr
 ## Usage
 
 1. Export the WhatsApp chat and put it into a folder named "chats". If you do not create this folder the program will do it for you.
-2. Install the required libraries
-   `pip install -r requirements.txt`
+2. Install the required libraries  
+   `pip install -r requirements.txt`  
 3. Run main.py in command prompt  
    `cd WhatsAnalyzer`  
    `python whatsanalyzer.py <chatfilename>`
