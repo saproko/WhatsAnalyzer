@@ -4,5 +4,5 @@ venv
 build
 plots
 chats
-WhatsAnalyzer
 build.py
+report.html
