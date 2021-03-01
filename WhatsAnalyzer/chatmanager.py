@@ -40,7 +40,8 @@ class ChatManager():
             self._chatname += ".txt"
 
         try:
-            filepath = f"chats/{self._chatname}"
+            project_basedir = path.dirname(os.getcwd())  # Projekt Root
+            filepath = f"{project_basedir}/chats/{self._chatname}"
             with open(filepath, "r", encoding="utf-8") as f:
                 # Inhalt der Chatdatei lesen, LTR Mark entfernen, erste Line (WA Info) entfernen
                 content = f.read().replace(u"\u200e", "").splitlines()[1:]

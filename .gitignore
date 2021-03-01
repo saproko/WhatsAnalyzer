@@ -4,5 +4,6 @@ venv
 build
 plots
 chats
+reports
 build.py
-report.html
+*.html

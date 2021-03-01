@@ -1,12 +1,11 @@
 # IDEAS
 '''
 IMPLEMENT
-- Link count / häufigste Seiten
-- Startdatum (in quick facts)
-FIX
-- plots Ordner in Nutzer aufteilen
--> mehrere reports gleichzeitig möglich
+- Link count + häufigste Seiten
+- Chat Startdatum
 
+- cmd out in HTMl einbetten
+- HTML verschönern
 '''
 
 from argparse import ArgumentParser
@@ -45,30 +44,14 @@ def pretty_print(result: dict) -> None:
         print(result)
 
 
-def folder_setup() -> None:
-    '''Erstellt die benötigten Ordner'''
-    if not path.exists("plots"):
-        os.makedirs("plots")
-    if not path.exists("chats"):
-        os.makedirs("chats")
-        input("Der Chatordner wurde erstellt. Tippe ENTER, sobald du die Chatdatei dort eingefügt hast.")
-
-
 if __name__ == "__main__":
     parser = ArgumentParser("Tool zum Analysieren von WhatsApp Chats")
     parser.add_argument("chatname", help="Name der Chat Datei", type=str)
-    parser.add_argument(
-        "--project_dir", help="Pfad zum Projektordner", type=str, default=None)
     args = parser.parse_args()
 
     chatname = args.chatname
 
-    # zum Projektordner wechseln
-    if args.project_dir is not None:
-        print(f"Wechseln zu {args.project_dir}")
-        os.chdir(args.project_dir)
-
-    folder_setup()
+    os.chdir(path.dirname(path.realpath(__file__)))
 
     reporter = Reporter(chatname)
     reporter.create_report()

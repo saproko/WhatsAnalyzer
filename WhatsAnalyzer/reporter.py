@@ -1,5 +1,7 @@
 from rich.console import Console
 from rich.table import Table
+import os
+from os import path
 
 from plotter import Plotter
 from analyzer import Analyzer
@@ -11,7 +13,32 @@ class Reporter:
         self._plotter = Plotter(self._analyzer.manager.messages)
         self._chatname = chatname
 
+        self._chatname_base = path.splitext(
+            self._chatname)[0].lower()  # Dateiname ohne ".txt"
+        self._project_basedir = path.dirname(os.getcwd())  # Projekt Root
+        self._chat_plot_dir = path.join(
+            self._project_basedir, "plots", self._chatname_base)  # Plotordner für den chat
+
+    def folder_setup(self):
+        '''Erstellt die benötigten Ordner'''
+        if not path.exists(f"{self._project_basedir}/chats"):
+            os.makedirs(f"{self._project_basedir}/chats")
+            print("Chatordner erstellt")
+
+        if not path.exists(f"{self._project_basedir}/plots"):
+            os.makedirs(f"{self._project_basedir}/plots")
+            print("Plotordner erstellt")
+
+        if not path.exists(self._chat_plot_dir):
+            os.makedirs(self._chat_plot_dir)
+            print("Chatspeziefischer Plotordner erstellt")
+
+        if not path.exists(f"{self._project_basedir}/reports"):
+            os.makedirs(f"{self._project_basedir}/reports")
+            print("Reportordner erstellt")
+
     def create_report(self):
+        self.folder_setup()
         self.export_graphs()
         self.create_html_report()
         self.cmd_out()
@@ -21,40 +48,40 @@ class Reporter:
 
         # Nachrichten gruppiert nach Stunde
         self._plotter.plot_group_messeges_by(
-            "hour", export_path="plots/msg_by_hour.png")
+            "hour", export_path=f"{self._chat_plot_dir}/msg_by_hour.png")
 
         # Nachrichten gruppiert nach Wochentag
         self._plotter.plot_group_messeges_by(
-            "weekday", export_path="plots/msg_by_weekday.png")
+            "weekday", export_path=f"{self._chat_plot_dir}/msg_by_weekday.png")
 
         # Nachrichtenverlauf (pro Woche)
         self._plotter.plot_total_messages_over_time(
-            export_path="plots/msg_per_week.png")
+            export_path=f"{self._chat_plot_dir}/msg_per_week.png")
 
         # Nachrichten pro Nutzer
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_msg_count(),
                                                title="Nachrichten pro Nutzer",
                                                mode="pie",
-                                               export_path="plots/msg_per_user.png")
+                                               export_path=f"{self._chat_plot_dir}/msg_per_user.png")
 
         # Erste Nachricht des Tages Counter
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_start_conversation(),
                                                title="Wie oft hat der Nutzer die Unterhaltung gestartet?",
                                                mode="pie",
                                                label_func=lambda s: f"{s}%",
-                                               export_path="plots/conv_start.png")
+                                               export_path=f"{self._chat_plot_dir}/conv_start.png")
 
         # Medien Anzahl pro Nutzer
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_count_media(sum_only=True),
                                                title="Medienanzahl pro Nutzer\n(Bilder, Sticker, Sprachnachrichten...)",
                                                mode="pie",
-                                               export_path="plots/media_per_user.png")
+                                               export_path=f"{self._chat_plot_dir}/media_per_user.png")
 
         # Durchschnittliche Wortanzahl pro Nachricht pro Nutzer
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_avg_word_count(),
                                                title="Durchschnittliche Anzahl an Worten pro Nachricht",
                                                mode="bar",
-                                               export_path="plots/msg_len_per_user.png")
+                                               export_path=f"{self._chat_plot_dir}/msg_len_per_user.png")
 
     def cmd_out(self):
         '''Zeigt Ergebnisse in der Konsole an'''
@@ -116,7 +143,7 @@ class Reporter:
         print()
 
     def create_html_report(self):
-        html_str = '''
+        html_str = f'''
 <!DOCTYPE html>
 <html>
   <head></head>
@@ -125,21 +152,21 @@ class Reporter:
     <h1 style="font-family: Trebuchet MS" id="title">WhatsApp Report</h1>
     <div>
       <img
-        src="plots/msg_per_user.png"
+        src="{self._chat_plot_dir}/msg_per_user.png"
         alt="msg_by_user"
         width="640"
         height="480"
       />
 
       <img
-        src="plots/conv_start.png"
+        src="{self._chat_plot_dir}/conv_start.png"
         alt="conv_start"
         width="640"
         height="480"
       />
     
       <img
-        src="plots/media_per_user.png"
+        src="{self._chat_plot_dir}/media_per_user.png"
         alt="media_per_user"
         width="640"
         height="480"
@@ -147,14 +174,14 @@ class Reporter:
     </div>
     <div>
       <img
-        src="plots/msg_by_hour.png"
+        src="{self._chat_plot_dir}/msg_by_hour.png"
         alt="msg_by_hour"
         width="640"
         height="480"
       />
 
       <img
-        src="plots/msg_by_weekday.png"
+        src="{self._chat_plot_dir}/msg_by_weekday.png"
         alt="msg_by_weekday"
         width="640"
         height="480"
@@ -162,7 +189,7 @@ class Reporter:
     </div>
     <div>
       <img
-        src="plots/msg_per_week.png"
+        src="{self._chat_plot_dir}/msg_per_week.png"
         alt="msg_per_week"
         width="640"
         height="480"
@@ -171,5 +198,14 @@ class Reporter:
   </body>
 </html>
 '''
-        with open("report.html", "w") as f:
+        # Report im Reportordner speichern
+        report_path = path.join(
+            self._project_basedir, "reports", f"{self._chatname_base}_report.html")
+        with open(report_path, "w") as f:
+            f.write(html_str)
+
+        # aktuellen Report im Rootverzeichnis speichern
+        recent_report_path = path.join(
+            self._project_basedir, f"recent_report.html")
+        with open(recent_report_path, "w") as f:
             f.write(html_str)
