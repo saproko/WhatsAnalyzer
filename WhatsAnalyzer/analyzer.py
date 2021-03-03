@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from collections import Counter
 from collections.abc import Iterable
 import emoji
@@ -71,6 +73,20 @@ class Analyzer():
         last_day = content[-1].dateandtime
         deltadays = (last_day - first_day).days
         return self.total_msg_count() / deltadays
+
+    def most_common_links(self, n: int = 5) -> dict:
+        '''Return die n am häufigsten vorkommenden Websites'''
+        all_sites = [url.netloc for msg in self._manager.messages for url in msg.links]
+        # remove "www." prefix
+        no_prefix = []
+        for site in all_sites:
+            prefix = "www."
+            if site.startswith(prefix):
+                no_prefix.append(site[len(prefix):])
+            else:
+                no_prefix.append(site)
+
+        return self._get_most_common(no_prefix, n)
 
     def user_most_common_words(self, n: int = 5) -> dict:
         '''Return die n am häufigsten verwendeten Worte jedes Nutzers

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from message import Message
 from user import User
 import globals_

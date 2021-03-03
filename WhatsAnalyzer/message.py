@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import re
 from datetime import datetime
 import emoji
+from urllib.parse import urlsplit
 import globals_
 
 
@@ -17,6 +20,7 @@ class Message:
         self._words_without_stopwords = self._init_words(
             without_stopwords=True)
         self._emojitexts = self._init_emojitexts()
+        self._links = self._init_links()
 
     def _init_username(self) -> str:
         # passende Variable für
@@ -70,6 +74,11 @@ class Message:
         else:
             return None
 
+    def _init_links(self) -> list:
+        matches = re.findall("https?://[^\s]+", self._body)
+        return [urlsplit(url) for url in matches]
+
+
     @property
     def username(self) -> str:
         '''Return Nuternamen des Verfassers der Nachricht falls vorhanden,
@@ -121,6 +130,11 @@ class Message:
     def stopwords(self) -> set:
         '''Return Liste mit Worten, die beim Wortzählen ignoriert werden'''
         return self._stopwords
+
+    @property
+    def links(self) -> list:
+        '''Return Liste mit Link objecten aus der Nachricht'''
+        return self._links
 
     @property
     def dictionary(self):

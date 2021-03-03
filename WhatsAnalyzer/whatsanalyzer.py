@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # IDEAS
 '''
 IMPLEMENT
@@ -6,8 +8,14 @@ IMPLEMENT
 
 - cmd out in HTMl einbetten
 - HTML verschönern
+
+- type hinting
+
+FIX
+- Diagrammtitel vergrößern
 '''
 
+from analyzer import Analyzer
 from argparse import ArgumentParser
 from reporter import Reporter
 import os
@@ -45,13 +53,15 @@ def pretty_print(result: dict) -> None:
 
 
 if __name__ == "__main__":
+    os.chdir(path.dirname(path.realpath(__file__)))
+
     parser = ArgumentParser("Tool zum Analysieren von WhatsApp Chats")
     parser.add_argument("chatname", help="Name der Chat Datei", type=str)
     args = parser.parse_args()
 
     chatname = args.chatname
 
-    os.chdir(path.dirname(path.realpath(__file__)))
+    anal = Analyzer(chatname)
 
     reporter = Reporter(chatname)
     reporter.create_report()

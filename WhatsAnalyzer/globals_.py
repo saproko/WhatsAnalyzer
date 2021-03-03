@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 DATEPATTERN_IOS = r"^\[\d\d\.\d\d\.\d\d,\s\d\d:\d\d:\d\d\]"
 DATEPATTERN_ANDROID = r"\d\d\.\d\d\.\d\d,\s\d\d:\d\d"
 

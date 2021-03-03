@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 class User():
     def __init__(self, username: str, userrows: list) -> None:
         self._username = username  # Chatname des Nutzers

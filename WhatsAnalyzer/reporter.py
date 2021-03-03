@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from rich.console import Console
 from rich.table import Table
 import os
@@ -87,7 +89,7 @@ class Reporter:
         '''Zeigt Ergebnisse in der Konsole an'''
         con = Console()
 
-        def most_common_table(d):
+        def user_most_common_table(d):
             usernames = [obj.username for obj in d.keys()]
             tab = Table(show_header=True)
 
@@ -132,14 +134,14 @@ class Reporter:
         con.print(
             "[green]Häufigste Wörter (Standardworte werden ausgeschlossen)[/green]")
         most_common_words = self._analyzer.user_most_common_words()
-        most_common_table(most_common_words)
+        user_most_common_table(most_common_words)
         print()
 
         con.print(
             "[green]Häufigste Emojis (als Text, da das Terminal keine Emojis anzeigen kann)[/green]")
         most_common_emojis = self._analyzer.user_most_common_emojis(
             as_text=True)
-        most_common_table(most_common_emojis)
+        user_most_common_table(most_common_emojis)
         print()
 
     def create_html_report(self):
