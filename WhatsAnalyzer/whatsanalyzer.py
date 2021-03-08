@@ -18,6 +18,7 @@ FIX
 from analyzer import Analyzer
 from argparse import ArgumentParser
 from reporter import Reporter
+from plotter import Plotter
 import os
 from os import path
 

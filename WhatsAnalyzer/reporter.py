@@ -48,6 +48,10 @@ class Reporter:
     def export_graphs(self) -> None:
         '''Erstellt und exportiert Graphen aus den Ergebnissen'''
 
+        # Nachrichtenverlauf pro Nutzer
+        self._plotter.plot_user_messages_over_time(
+            export_path=f"{self._chat_plot_dir}/msg_per_person_per_week.png")
+
         # Nachrichten gruppiert nach Stunde
         self._plotter.plot_group_messeges_by(
             "hour", export_path=f"{self._chat_plot_dir}/msg_by_hour.png")
@@ -151,7 +155,8 @@ class Reporter:
   <head></head>
 
   <body>
-    <h1 style="font-family: Trebuchet MS" id="title">WhatsApp Report</h1>
+    <h1 style="font-family: Trebuchet MS" id="title">WhatsApp Report des Chats "{self._chatname_base}"</h1>
+    
     <div>
       <img
         src="{self._chat_plot_dir}/msg_per_user.png"
@@ -159,21 +164,20 @@ class Reporter:
         width="640"
         height="480"
       />
-
-      <img
-        src="{self._chat_plot_dir}/conv_start.png"
-        alt="conv_start"
-        width="640"
-        height="480"
-      />
-    
       <img
         src="{self._chat_plot_dir}/media_per_user.png"
         alt="media_per_user"
         width="640"
         height="480"
       />
+      <img
+        src="{self._chat_plot_dir}/conv_start.png"
+        alt="conv_start"
+        width="640"
+        height="480"
+      />
     </div>
+
     <div>
       <img
         src="{self._chat_plot_dir}/msg_by_hour.png"
@@ -181,7 +185,6 @@ class Reporter:
         width="640"
         height="480"
       />
-
       <img
         src="{self._chat_plot_dir}/msg_by_weekday.png"
         alt="msg_by_weekday"
@@ -189,6 +192,7 @@ class Reporter:
         height="480"
       />
     </div>
+
     <div>
       <img
         src="{self._chat_plot_dir}/msg_per_week.png"
@@ -196,7 +200,14 @@ class Reporter:
         width="640"
         height="480"
       />
+      <img
+        src="{self._chat_plot_dir}/msg_per_person_per_week.png"
+        alt="msg_per_person_per_week"
+        width="640"
+        height="480"
+      />
     </div>
+
   </body>
 </html>
 '''

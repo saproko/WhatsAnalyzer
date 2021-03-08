@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import seaborn as sns
+from scipy.ndimage.filters import gaussian_filter1d
 
 
 class Plotter:
@@ -11,15 +12,14 @@ class Plotter:
         sns.despine(left=True, bottom=True)
         self._messages = messages
         self._df = self._init_dataframe()
-        self._nicecolors = ["#f94144", "#f3722c", "#f8961e",
-                            "#f9c74f", "#90be6d", "#43aa8b", "#577590"]
+        self._nicecolors = ["#577590", "#43aa8b", "#90be6d",
+                            "#f9c74f", "#f8961e", "#f3722c", "#f94144"]
         self.prettify()
 
-    def _init_dataframe(self) -> pd.DataFrame:
+    def _init_dataframe(self, datetime_index=True) -> pd.DataFrame:
         messages = self._messages
         message_dicts = [msg.dictionary for msg in messages]
         df = pd.DataFrame(message_dicts)
-        df.index = pd.to_datetime(df["_dateandtime"])
         return df
 
     @property
@@ -28,6 +28,7 @@ class Plotter:
         return self._df
 
     def prettify(self) -> None:
+        '''Verschönert die Matplotlib Darstellung'''
         sns.set(font="Franklin Gothic Book",
                 rc={"axes.axisbelow": False,
                     "axes.edgecolor": "lightgrey",
@@ -50,7 +51,10 @@ class Plotter:
                     "ytick.left": False,
                     "ytick.right": False})
 
-    def plot_total_messages_over_time(self, export_path=None, show=False):
+    def gaussian_filter(self, lst: list, sigma: float = 1.5):
+        return gaussian_filter1d(lst, sigma=sigma)
+
+    def plot_total_messages_over_time(self, export_path: str = None, show: bool = False):
         '''Plots Nachrichten über Zeit (resample mode bestimmt Periode)
            export_path: falls nicht None -> speichert den plot unter <export_path>
            show: falls True: zeigt das Diagramma an'''
@@ -72,6 +76,39 @@ class Plotter:
 
         self.plot(show=show, export_path=export_path)
 
+    def plot_user_messages_over_time(self, export_path=None, show=False):
+        '''Plot Entwicklung der Nachrichtenanzahl pro Nutzer über die Zeit'''
+        groups = self.df.groupby([pd.Grouper(key="_dateandtime", freq="W"), "_username"])[
+            "_username"].size()
+
+        datadict = {}
+        # Daten von jedem Nutzer bestimmen
+        for username in self.df["_username"].unique():
+            user_df = groups.xs(username, level=1, drop_level=False)
+            x_data = list(user_df.index.get_level_values(0))
+            y_data = self.gaussian_filter(list(user_df.values))
+            datadict[username] = (x_data, y_data)
+
+        # Nachrichten summieren und sortieren
+        user_sums = {username: sum(data[1])
+                     for username, data in datadict.items()}
+        sorted_user_sums = dict(
+            sorted(user_sums.items(), key=lambda item: item[1], reverse=True))
+
+        # Daten entpacken und plotten
+        for username in sorted_user_sums.keys():
+            user_data = datadict[username]
+            x_data = user_data[0]
+            y_data = user_data[1]
+            total_msg_count = user_sums[username]
+
+            plt.plot(x_data, y_data,
+                     label=f"{username} - ({total_msg_count} Total)")
+
+        plt.legend()
+        plt.gca().set_title("Nachrichten pro Woche pro Nutzer")
+        self.plot(show=show, export_path=export_path)
+
     def plot_group_messeges_by(self, by: str, export_path=None, show=False):
         '''Plots Nachrichten Gruppiert nach "by"
            by: Möglichkeiten ("hour", "weekday")
@@ -86,8 +123,8 @@ class Plotter:
         elif by == "weekday":
             data = self.df.groupby(self.df._dateandtime.dt.weekday).size()
 
-            weekday_names = {1: "Montag", 2: "Dienstag", 3: "Mittwoch",
-                             4: "Donnerstag", 5: "Freitag", 6: "Samstag", 7: "Sonntag"}
+            weekday_names = {0: "Montag", 1: "Dienstag", 2: "Mittwoch",
+                             3: "Donnerstag", 4: "Freitag", 5: "Samstag", 6: "Sonntag"}
             data.index = [weekday_names.get(item, item) for item in data.index]
 
             ax = data.plot.bar(title="Nachrichten pro Wochentag")
@@ -143,7 +180,7 @@ class Plotter:
             plt.gca().set_title(title)
 
         elif mode == "pie":
-            data = sorted_dict(d)
+            data = sorted_dict(d, reverse=True)
             # Nutzernamen für die Legende
             legend_labels = data.keys()
             values = data.values()
@@ -155,7 +192,7 @@ class Plotter:
                 pie_labels = values
 
             # plot erstellen
-            patches, texts = plt.pie(values, startangle=90,
+            patches, texts = plt.pie(values, startangle=-90,
                                      labels=pie_labels, labeldistance=.8,
                                      colors=self._nicecolors)
             # Labels anpassen
