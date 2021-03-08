@@ -24,8 +24,8 @@ With this program you can get insight into all your WhatsApp chats, including gr
    `pip install -r requirements.txt`
 3. Export the WhatsApp chat and put it into a folder named "chats". If you do not create this folder the program will do it for you.
 4. Run main.py in command prompt
-   `cd WhatsAnalyzer`
-   `python whatsanalyzer.py <chatfilename>`
+   `cd WhatsAnalyzer`  
+   `python whatsanalyzer.py<chatfilename>`
 
 ## Limitations
 
