@@ -20,6 +20,8 @@ class Reporter:
         self._project_basedir = path.dirname(os.getcwd())  # Projekt Root
         self._chat_plot_dir = path.join(
             self._project_basedir, "plots", self._chatname_base)  # Plotordner für den chat
+        self._rel_chat_plot_dir = fr"\{path.relpath(self._chat_plot_dir, self._project_basedir)}"
+
 
     def folder_setup(self):
         '''Erstellt die benötigten Ordner'''
@@ -50,6 +52,7 @@ class Reporter:
 
         # Nachrichtenverlauf pro Nutzer
         self._plotter.plot_user_messages_over_time(
+            title=None,
             export_path=f"{self._chat_plot_dir}/msg_per_person_per_week.png")
 
         # Nachrichten gruppiert nach Stunde
@@ -62,30 +65,31 @@ class Reporter:
 
         # Nachrichtenverlauf (pro Woche)
         self._plotter.plot_total_messages_over_time(
+            title=None,
             export_path=f"{self._chat_plot_dir}/msg_per_week.png")
 
         # Nachrichten pro Nutzer
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_msg_count(),
-                                               title="Nachrichten pro Nutzer",
+                                               title=None,
                                                mode="pie",
                                                export_path=f"{self._chat_plot_dir}/msg_per_user.png")
 
         # Erste Nachricht des Tages Counter
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_start_conversation(),
-                                               title="Wie oft hat der Nutzer die Unterhaltung gestartet?",
+                                               title=None,
                                                mode="pie",
                                                label_func=lambda s: f"{s}%",
                                                export_path=f"{self._chat_plot_dir}/conv_start.png")
 
         # Medien Anzahl pro Nutzer
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_count_media(sum_only=True),
-                                               title="Medienanzahl pro Nutzer\n(Bilder, Sticker, Sprachnachrichten...)",
+                                               title=None,
                                                mode="pie",
                                                export_path=f"{self._chat_plot_dir}/media_per_user.png")
 
         # Durchschnittliche Wortanzahl pro Nachricht pro Nutzer
         self._plotter.plot_user_vs_number_dict(self._analyzer.user_avg_word_count(),
-                                               title="Durchschnittliche Anzahl an Worten pro Nachricht",
+                                               title=None,
                                                mode="bar",
                                                export_path=f"{self._chat_plot_dir}/msg_len_per_user.png")
 
@@ -149,67 +153,196 @@ class Reporter:
         print()
 
     def create_html_report(self):
-        html_str = f'''
+        html_str = fr'''
 <!DOCTYPE html>
 <html>
-  <head></head>
+  <head>
+    <!-- Meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initioal-scale=1, shrink-to-fi=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    
+    <style>
+      .jumbotron {{
+        border-radius: 0px 0px 15px 15px;
+        padding: 2vh;
+      }}
+
+      .card {{
+        background: rgb(236, 239, 244);
+        border-color: rgb(236, 239, 244);
+        border-radius: 30px;
+        box-shadow: -15px -15px 20px white,
+          15px 15px 20px rgb(151, 167, 195, 0.5);
+      }}
+
+      .card-title {{
+        font-family: "Roboto", sans-serif;
+        font-weight: 600;
+        padding: 5px;
+      }}
+
+      h1 {{
+        font-family: Trebuchet MS;
+        justify-content: center;
+      }}
+
+      body {{
+        background-color: rgb(236, 239, 244);
+      }}
+    </style>
+
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+      defer
+    ></script>
+  </head>
 
   <body>
-    <h1 style="font-family: Trebuchet MS" id="title">WhatsApp Report des Chats "{self._chatname_base}"</h1>
-    
-    <div>
-      <img
-        src="{self._chat_plot_dir}/msg_per_user.png"
-        alt="msg_by_user"
-        width="640"
-        height="480"
-      />
-      <img
-        src="{self._chat_plot_dir}/media_per_user.png"
-        alt="media_per_user"
-        width="640"
-        height="480"
-      />
-      <img
-        src="{self._chat_plot_dir}/conv_start.png"
-        alt="conv_start"
-        width="640"
-        height="480"
-      />
+    <div class="jumbotron bg-info text-white text-center">
+      <div class="container">
+        <h1 class="display-4">WhatsApp Report von "{self._chatname_base}"</h1>
+      </div>
     </div>
 
-    <div>
-      <img
-        src="{self._chat_plot_dir}/msg_by_hour.png"
-        alt="msg_by_hour"
-        width="640"
-        height="480"
-      />
-      <img
-        src="{self._chat_plot_dir}/msg_by_weekday.png"
-        alt="msg_by_weekday"
-        width="640"
-        height="480"
-      />
-    </div>
+    <div class="container text-center text-muted" style="min-width: 90vw">
+      <!-- cards -->
+      <div class="row">
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "msg_per_user.png")}"
+              alt="msg_by_user"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Nachrichten pro Nutzer</h2>
+            </div>
+          </div>
+        </div>
 
-    <div>
-      <img
-        src="{self._chat_plot_dir}/msg_per_week.png"
-        alt="msg_per_week"
-        width="640"
-        height="480"
-      />
-      <img
-        src="{self._chat_plot_dir}/msg_per_person_per_week.png"
-        alt="msg_per_person_per_week"
-        width="640"
-        height="480"
-      />
-    </div>
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "media_per_user.png")}"
+              alt="media_per_user"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Medienanzahl pro Nutzer</h2>
+            </div>
+          </div>
+        </div>
 
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "conv_start.png")}"
+              alt="conv_start"
+            />
+            <div class="card-block">
+              <h2 class="card-title">
+                Wie oft hat der Nutzer die Unterhaltung gestartet?
+              </h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "msg_len_per_user.png")}"
+              alt="msg_len_per_user"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Durchschnittliche Anzahl an Worten pro Nachricht</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "msg_by_weekday.png")}"
+              alt="msg_by_weekday"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Nachrichten pro Wochentag</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "msg_by_hour.png")}"
+              alt="msg_by_hour"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Nachrichten pro Uhrzeit</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "msg_per_week.png")}"
+              alt="msg_by_hour"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Nachrichten pro Woche</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12 col-xl-6 mb-4">
+          <div class="card h-100">
+            <img
+              class="card-img-top img-fluid"
+              src="{path.join(self._rel_chat_plot_dir, "msg_per_person_per_week.png")}"
+              alt="msg_per_person_per_week"
+            />
+            <div class="card-block">
+              <h2 class="card-title">Nachrichten pro Woche pro Nutzer</h2>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </body>
 </html>
+
 '''
         # Report im Reportordner speichern
         report_path = path.join(

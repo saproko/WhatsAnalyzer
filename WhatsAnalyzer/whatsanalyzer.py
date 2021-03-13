@@ -61,7 +61,5 @@ if __name__ == "__main__":
 
     chatname = args.chatname
 
-    anal = Analyzer(chatname)
-
     reporter = Reporter(chatname)
     reporter.create_report()

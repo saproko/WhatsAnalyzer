@@ -16,7 +16,7 @@ class Plotter:
                             "#f9c74f", "#f8961e", "#f3722c", "#f94144"]
         self.prettify()
 
-    def _init_dataframe(self, datetime_index=True) -> pd.DataFrame:
+    def _init_dataframe(self) -> pd.DataFrame:
         messages = self._messages
         message_dicts = [msg.dictionary for msg in messages]
         df = pd.DataFrame(message_dicts)
@@ -54,7 +54,9 @@ class Plotter:
     def gaussian_filter(self, lst: list, sigma: float = 1.5):
         return gaussian_filter1d(lst, sigma=sigma)
 
-    def plot_total_messages_over_time(self, export_path: str = None, show: bool = False):
+    def plot_total_messages_over_time(self, export_path: str = None,
+                                      title: str = None,
+                                      show: bool = False):
         '''Plots Nachrichten über Zeit (resample mode bestimmt Periode)
            export_path: falls nicht None -> speichert den plot unter <export_path>
            show: falls True: zeigt das Diagramma an'''
@@ -63,7 +65,7 @@ class Plotter:
         data = self.df.groupby(self.df._dateandtime.dt.date).size()
         data.index = pd.to_datetime(data.index)
         data = data.resample("W").sum()
-        ax = data.plot(kind="bar", title="Nachrichten pro Woche")
+        ax = data.plot(kind="bar", title=title)
 
         # tick Formatierung
         ticklabels = [""]*len(data.index)
@@ -76,7 +78,7 @@ class Plotter:
 
         self.plot(show=show, export_path=export_path)
 
-    def plot_user_messages_over_time(self, export_path=None, show=False):
+    def plot_user_messages_over_time(self, export_path=None, show=False, title=None):
         '''Plot Entwicklung der Nachrichtenanzahl pro Nutzer über die Zeit'''
         groups = self.df.groupby([pd.Grouper(key="_dateandtime", freq="W"), "_username"])[
             "_username"].size()
@@ -106,10 +108,10 @@ class Plotter:
                      label=f"{username} - ({total_msg_count} Total)")
 
         plt.legend()
-        plt.gca().set_title("Nachrichten pro Woche pro Nutzer")
+        plt.gca().set_title(title)
         self.plot(show=show, export_path=export_path)
 
-    def plot_group_messeges_by(self, by: str, export_path=None, show=False):
+    def plot_group_messeges_by(self, by: str, export_path=None, show=False, title=None):
         '''Plots Nachrichten Gruppiert nach "by"
            by: Möglichkeiten ("hour", "weekday")
            export_path: falls nicht None -> speichert den plot unter <export_path>
@@ -117,7 +119,7 @@ class Plotter:
 
         if by == "hour":
             data = self.df.groupby(self.df._dateandtime.dt.hour).size()
-            ax = data.plot.bar(title="Nachrichten pro Stunde")
+            ax = data.plot.bar(title=title)
             ax.set_xlabel("Stunde")
 
         elif by == "weekday":
@@ -127,7 +129,7 @@ class Plotter:
                              3: "Donnerstag", 4: "Freitag", 5: "Samstag", 6: "Sonntag"}
             data.index = [weekday_names.get(item, item) for item in data.index]
 
-            ax = data.plot.bar(title="Nachrichten pro Wochentag")
+            ax = data.plot.bar(title=title)
             ax.set_xlabel("Wochentag")
 
         else:
@@ -142,7 +144,7 @@ class Plotter:
         self.plot(show=show, export_path=export_path)
 
     def plot_user_vs_number_dict(self, d: dict, mode: str = "bar",
-                                 title: str = "", label_func=None,
+                                 title: str = None, label_func=None,
                                  export_path=None, show=False):
         '''Plots Dictionary nach dem Muster {<User Objekt>: Wert (int)}
            data: Dictionary zum plotten
@@ -204,23 +206,24 @@ class Plotter:
             plt.gca().set_title(title)
             # Legende rechts einfügen
             plt.legend(patches, legend_labels, loc="center left",
-                       bbox_to_anchor=(0.9, 0.5), frameon=False)
+                       bbox_to_anchor=(1.05, 0.5), frameon=False)
 
         else:
             raise ValueError(f"Den Modus '{mode}' gibt es nicht.")
 
         self.plot(show=show, export_path=export_path)
 
-    def plot(self, show=False, export_path=None):
-        plt.tight_layout()
+    def plot(self, show=False, export_path=None, transparent=True):
         plt.gcf().set_size_inches(8, 6)
+        plt.tight_layout()
 
         if export_path is not None:
             # Exportieren
-            plt.savefig(export_path)
+            plt.savefig(export_path, transparent=transparent, dpi=300, bbox_inches="tight", pad_inches=0.2)
 
         if show:
             # Plot anzeigen
             plt.show()
         else:
-            plt.clf()
+            # Figur löschen
+            plt.close(plt.gcf())
