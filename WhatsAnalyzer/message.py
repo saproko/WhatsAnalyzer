@@ -24,31 +24,34 @@ class Message:
 
     def _init_username(self) -> str:
         # passende Variable für
-        name_pattern = getattr(globals_, f"CAPTURE_NAME_PATTERN_{self.os}")
-        match = re.match(name_pattern, self.msg)
+        match = re.match(globals_.MSG_PATTERN, self.msg)
         if match is not None:
-            return match.group(1)
+            return match.group("username")
         else:
             return None
 
     def _init_dateandtime(self) -> datetime:
-        date_pattern = getattr(globals_, f"DATEPATTERN_{self.os}")
         dateparse_pattern = getattr(globals_, f"DATEPARSE_{self.os}")
 
-        datestring = re.match(date_pattern, self.msg)
-        return datetime.strptime(datestring.group(0), dateparse_pattern)
+        date_match = re.match(globals_.MSG_PATTERN, self.msg)
+        if date_match is not None:
+            return datetime.strptime(date_match.group("dateandtime"), dateparse_pattern)
+        else:
+            return None
 
     def _init_mediatype(self) -> str:
-        media_pattern = getattr(globals_, f"CAPTURE_MEDIA_PATTERN_{self.os}")
-        media_match = re.match(media_pattern, self.msg)
+        media_match = re.match(globals_.MSG_PATTERN, self.msg)
         if media_match is not None:
-            return media_match.group(1)
+            return media_match.group("media")
         else:
             return None
 
     def _init_body(self) -> str:
-        prefix_pattern = getattr(globals_, f"PREFIX_PATTERN_{self.os}")
-        return re.sub(prefix_pattern, "", self.msg)
+        match = re.match(globals_.MSG_PATTERN, self.msg)
+        if match is not None:
+            return match.group("body")
+        else:
+            return None
 
     def _init_words(self, without_stopwords=False) -> list:
         if self.mediatype is None and self.username is not None:
@@ -64,19 +67,23 @@ class Message:
             return None
 
     def _init_emojitexts(self):
-        strange_pattern = r"[a-zA-Z0-9\.,:!?\s]"
-        strange_signs_only = re.sub(strange_pattern, "", self.body)
-        demojized = emoji.demojize(strange_signs_only)
-        emoji_pattern = r":[a-z_]+:"
-        emojitexts = re.findall(emoji_pattern, demojized)
-        if len(emojitexts) > 0:
-            return emojitexts
+        if self.body is not None:
+            strange_pattern = r"[a-zA-Z0-9\.,:!?\s]"
+            strange_signs_only = re.sub(strange_pattern, "", self.body)
+            demojized = emoji.demojize(strange_signs_only)
+            emoji_pattern = r":[a-z_]+:"
+            emojitexts = re.findall(emoji_pattern, demojized)
+            if len(emojitexts) > 0:
+                return emojitexts
         else:
             return None
 
     def _init_links(self) -> list:
-        matches = re.findall("https?://[^\s]+", self._body)
-        return [urlsplit(url) for url in matches]
+        if self.body is not None:
+            matches = re.findall("https?://[^\s]+", self.body)
+            return [urlsplit(url) for url in matches]
+        else:
+            return None
 
 
     @property

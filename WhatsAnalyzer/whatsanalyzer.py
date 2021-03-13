@@ -3,7 +3,7 @@
 # IDEAS
 '''
 IMPLEMENT
-- Link count + häufigste Seiten
+- Link count + häufigste Seiten (plot)
 - Chat Startdatum
 
 - cmd out in HTMl einbetten
@@ -18,7 +18,6 @@ FIX
 from analyzer import Analyzer
 from argparse import ArgumentParser
 from reporter import Reporter
-from plotter import Plotter
 import os
 from os import path
 
